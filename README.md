@@ -1,6 +1,6 @@
 # leafwing_terminal
 
-A simple half-life inspired console with support for argument parsing.
+A simple virtual terminal for Bevy games with support for argument parsing.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/tqwewe/bevy-console/main/doc/screenshot.png" width="100%">
@@ -62,7 +62,6 @@ cargo run --example log_command
 - [log_command](/examples/log_command.rs)
 - [raw_commands](/examples/raw_commands.rs)
 - [write_to_console](/examples/write_to_console.rs)
-- [change_console_key](/examples/change_console_key.rs)
 
 ## wasm
 
