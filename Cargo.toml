@@ -3,7 +3,7 @@ name = "leafwing_terminal"
 version = "0.2.5"
 edition = "2021"
 authors = ["Alice I. Cecile<alice@leafwing-studios.com>", "Rose Peck<rose@leafwing-studios.com>"]
-homepage = "https://github.com/RichoDemus/bevy-console"
+homepage = "https://leafwing-studios.com"
 repository = "https://github.com/Leafwing-Studios/leafwing_terminal/"
 description = "A virtual terminal for Bevy games"
 license = "MIT"
@@ -11,12 +11,19 @@ readme = "README.md"
 
 [dependencies]
 bevy = { version = "0.6", default-features = false }
-bevy_console_derive = { path = "./bevy_console_derive" }
-bevy_console_parser = { path = "./bevy_console_parser" }
+leafwing_terminal_derive = { path = "./leafwing_terminal_derive" }
+leafwing_terminal_parser = { path = "./leafwing_terminal_parser" }
 bevy_egui = "0.11"
 
 [dev-dependencies]
 bevy = "0.6"
 
 [workspace]
-members = ["bevy_console_derive", "bevy_console_parser"]
+members = ["leafwing_terminal_derive", "leafwing_terminal_parser"]
+
+[patch.crates-io]
+# Use for local development
+leafwing_terminal_derive = {path = "./leafwing_terminal_derive"}
+leafwing_terminal_parser = {path = "./leafwing_terminal_parser"}
+
+

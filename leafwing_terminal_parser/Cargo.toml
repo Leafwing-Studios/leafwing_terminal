@@ -1,0 +1,16 @@
+[package]
+name = "leafwing_terminal_parser"
+version = "0.2.4"
+edition = "2021"
+authors = ["Alice I. Cecile<alice@leafwing-studios.com>", "Rose Peck<rose@leafwing-studios.com>"]
+homepage = "https://leafwing-studios.com"
+repository = "https://github.com/Leafwing-Studios/leafwing_terminal/"
+license = "MIT"
+readme = "../README.md"
+
+[dependencies]
+nom = "7.1"
+nom-supreme = "0.6"
+
+[dev-dependencies]
+pretty_assertions = "1.1"

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_console::{ConsolePlugin, PrintConsoleLine};
+use leafwing_terminal::{ConsolePlugin, PrintConsoleLine};
 
 fn main() {
     App::new()

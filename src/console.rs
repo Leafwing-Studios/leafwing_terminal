@@ -401,20 +401,10 @@ impl PrintConsoleLine {
     }
 }
 
-/// Key for toggling the console.
-#[derive(Copy, Clone)]
-pub enum ToggleConsoleKey {
-    /// Keycode supported by bevy_input
-    KeyCode(KeyCode),
-    /// Raw scan code
-    ScanCode(u32),
-}
-
 /// Console configuration
 #[derive(Clone)]
 pub struct ConsoleConfiguration {
     /// Registered keys for toggling the console
-    pub keys: Vec<ToggleConsoleKey>,
     /// Left position
     pub left_pos: f32,
     /// Top position
@@ -432,7 +422,6 @@ pub struct ConsoleConfiguration {
 impl Default for ConsoleConfiguration {
     fn default() -> Self {
         Self {
-            keys: vec![ToggleConsoleKey::KeyCode(KeyCode::Grave)],
             left_pos: 200.0,
             top_pos: 100.0,
             height: 400.0,
@@ -496,13 +485,6 @@ impl AddConsoleCommand for App {
     }
 }
 
-/// Console open state
-#[derive(Default)]
-pub struct ConsoleOpen {
-    /// Console open
-    pub open: bool,
-}
-
 pub(crate) struct ConsoleState {
     pub(crate) buf: String,
     pub(crate) scrollback: Vec<String>,
@@ -527,121 +509,102 @@ pub(crate) fn console_ui(
     mut keyboard_input_events: EventReader<KeyboardInput>,
     mut state: ResMut<ConsoleState>,
     mut command_entered: EventWriter<ConsoleCommandEntered>,
-    mut console_open: ResMut<ConsoleOpen>,
 ) {
-    let pressed = keyboard_input_events
-        .iter()
-        .any(|code| console_key_pressed(code, &config.keys));
-    if pressed {
-        console_open.open = !console_open.open;
-    }
+    egui::Window::new("Console")
+        .collapsible(false)
+        .default_pos([config.left_pos, config.top_pos])
+        .default_size([config.width, config.height])
+        .resizable(true)
+        .show(egui_context.ctx_mut(), |ui| {
+            ui.vertical(|ui| {
+                let scroll_height = ui.available_height() - 30.0;
 
-    if console_open.open {
-        egui::Window::new("Console")
-            .collapsible(false)
-            .default_pos([config.left_pos, config.top_pos])
-            .default_size([config.width, config.height])
-            .resizable(true)
-            .show(egui_context.ctx_mut(), |ui| {
-                ui.vertical(|ui| {
-                    let scroll_height = ui.available_height() - 30.0;
-
-                    // Scroll area
-                    ScrollArea::vertical()
-                        .auto_shrink([false, false])
-                        .stick_to_bottom()
-                        .max_height(scroll_height)
-                        .show(ui, |ui| {
-                            ui.vertical(|ui| {
-                                for line in &state.scrollback {
-                                    ui.label(RichText::new(line).monospace());
-                                }
-                            });
-
-                            // Scroll to bottom if console just opened
-                            if console_open.is_changed() {
-                                ui.scroll_to_cursor(Align::BOTTOM);
+                // Scroll area
+                ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .stick_to_bottom()
+                    .max_height(scroll_height)
+                    .show(ui, |ui| {
+                        ui.vertical(|ui| {
+                            for line in &state.scrollback {
+                                ui.label(RichText::new(line).monospace());
                             }
                         });
+                    });
 
-                    // Separator
-                    ui.separator();
+                // Separator
+                ui.separator();
 
-                    // Input
-                    let text_edit = TextEdit::singleline(&mut state.buf)
-                        .desired_width(f32::INFINITY)
-                        .lock_focus(true)
-                        .text_style(egui::TextStyle::Monospace);
+                // Input
+                let text_edit = TextEdit::singleline(&mut state.buf)
+                    .desired_width(f32::INFINITY)
+                    .lock_focus(true)
+                    .text_style(egui::TextStyle::Monospace);
 
-                    // Handle enter
-                    let text_edit_response = ui.add(text_edit);
-                    if text_edit_response.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                        if state.buf.trim().is_empty() {
-                            state.scrollback.push(String::new());
-                        } else {
-                            let msg = format!("$ {}", state.buf);
-                            state.scrollback.push(msg);
-                            let cmd_string = state.buf.clone();
-                            state.history.insert(1, cmd_string);
-                            if state.history.len() > config.history_size + 1 {
-                                state.history.pop_back();
-                            }
-
-                            match parse_console_command(&state.buf) {
-                                Ok(cmd) => {
-                                    let command = ConsoleCommandEntered {
-                                        command: cmd.command.to_string(),
-                                        args: cmd
-                                            .args
-                                            .into_iter()
-                                            .map(ValueRawOwned::from)
-                                            .collect(),
-                                    };
-
-                                    command_entered.send(command);
-                                }
-                                Err(_) => {
-                                    state
-                                        .scrollback
-                                        .push("[error] invalid argument(s)".to_string());
-                                }
-                            }
-
-                            state.buf.clear();
-                        }
-                    }
-
-                    // Handle up and down through history
-                    if text_edit_response.has_focus()
-                        && ui.input().key_pressed(egui::Key::ArrowUp)
-                        && state.history.len() > 1
-                        && state.history_index < state.history.len() - 1
-                    {
-                        if state.history_index == 0 && !state.buf.trim().is_empty() {
-                            *state.history.get_mut(0).unwrap() = state.buf.clone();
+                // Handle enter
+                let text_edit_response = ui.add(text_edit);
+                if text_edit_response.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
+                    if state.buf.trim().is_empty() {
+                        state.scrollback.push(String::new());
+                    } else {
+                        let msg = format!("$ {}", state.buf);
+                        state.scrollback.push(msg);
+                        let cmd_string = state.buf.clone();
+                        state.history.insert(1, cmd_string);
+                        if state.history.len() > config.history_size + 1 {
+                            state.history.pop_back();
                         }
 
-                        state.history_index += 1;
-                        let previous_item = state.history.get(state.history_index).unwrap().clone();
-                        state.buf = previous_item;
+                        match parse_console_command(&state.buf) {
+                            Ok(cmd) => {
+                                let command = ConsoleCommandEntered {
+                                    command: cmd.command.to_string(),
+                                    args: cmd.args.into_iter().map(ValueRawOwned::from).collect(),
+                                };
 
-                        set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
-                    } else if text_edit_response.has_focus()
-                        && ui.input().key_pressed(egui::Key::ArrowDown)
-                        && state.history_index > 0
-                    {
-                        state.history_index -= 1;
-                        let next_item = state.history.get(state.history_index).unwrap().clone();
-                        state.buf = next_item;
+                                command_entered.send(command);
+                            }
+                            Err(_) => {
+                                state
+                                    .scrollback
+                                    .push("[error] invalid argument(s)".to_string());
+                            }
+                        }
 
-                        set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                        state.buf.clear();
+                    }
+                }
+
+                // Handle up and down through history
+                if text_edit_response.has_focus()
+                    && ui.input().key_pressed(egui::Key::ArrowUp)
+                    && state.history.len() > 1
+                    && state.history_index < state.history.len() - 1
+                {
+                    if state.history_index == 0 && !state.buf.trim().is_empty() {
+                        *state.history.get_mut(0).unwrap() = state.buf.clone();
                     }
 
-                    // Focus on input
-                    ui.memory().request_focus(text_edit_response.id);
-                });
+                    state.history_index += 1;
+                    let previous_item = state.history.get(state.history_index).unwrap().clone();
+                    state.buf = previous_item;
+
+                    set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                } else if text_edit_response.has_focus()
+                    && ui.input().key_pressed(egui::Key::ArrowDown)
+                    && state.history_index > 0
+                {
+                    state.history_index -= 1;
+                    let next_item = state.history.get(state.history_index).unwrap().clone();
+                    state.buf = next_item;
+
+                    set_cursor_pos(ui.ctx(), text_edit_response.id, state.buf.len());
+                }
+
+                // Focus on input
+                ui.memory().request_focus(text_edit_response.id);
             });
-    }
+        });
 }
 
 pub(crate) fn receive_console_line(
@@ -654,114 +617,9 @@ pub(crate) fn receive_console_line(
     }
 }
 
-fn console_key_pressed(
-    keyboard_input: &KeyboardInput,
-    configured_keys: &[ToggleConsoleKey],
-) -> bool {
-    if !keyboard_input.state.is_pressed() {
-        return false;
-    }
-
-    for configured_key in configured_keys {
-        match configured_key {
-            ToggleConsoleKey::KeyCode(configured_key_code) => match keyboard_input.key_code {
-                None => continue,
-                Some(pressed_key) => {
-                    if configured_key_code == &pressed_key {
-                        return true;
-                    }
-                }
-            },
-            ToggleConsoleKey::ScanCode(configured_scan_code) => {
-                if &keyboard_input.scan_code == configured_scan_code {
-                    return true;
-                }
-            }
-        }
-    }
-
-    false
-}
-
 fn set_cursor_pos(ctx: &Context, id: Id, pos: usize) {
     if let Some(mut state) = TextEdit::load_state(ctx, id) {
         state.set_ccursor_range(Some(CCursorRange::one(CCursor::new(pos))));
         state.store(ctx, id);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use bevy::input::ElementState;
-
-    #[test]
-    fn test_console_key_pressed_scan_code() {
-        let input = KeyboardInput {
-            scan_code: 41,
-            key_code: None,
-            state: ElementState::Pressed,
-        };
-
-        let config = vec![ToggleConsoleKey::ScanCode(41)];
-
-        let result = console_key_pressed(&input, &config);
-        assert!(result);
-    }
-
-    #[test]
-    fn test_console_wrong_key_pressed_scan_code() {
-        let input = KeyboardInput {
-            scan_code: 42,
-            key_code: None,
-            state: ElementState::Pressed,
-        };
-
-        let config = vec![ToggleConsoleKey::ScanCode(41)];
-
-        let result = console_key_pressed(&input, &config);
-        assert!(!result);
-    }
-
-    #[test]
-    fn test_console_key_pressed_key_code() {
-        let input = KeyboardInput {
-            scan_code: 0,
-            key_code: Some(KeyCode::Grave),
-            state: ElementState::Pressed,
-        };
-
-        let config = vec![ToggleConsoleKey::KeyCode(KeyCode::Grave)];
-
-        let result = console_key_pressed(&input, &config);
-        assert!(result);
-    }
-
-    #[test]
-    fn test_console_wrong_key_pressed_key_code() {
-        let input = KeyboardInput {
-            scan_code: 0,
-            key_code: Some(KeyCode::A),
-            state: ElementState::Pressed,
-        };
-
-        let config = vec![ToggleConsoleKey::KeyCode(KeyCode::Grave)];
-
-        let result = console_key_pressed(&input, &config);
-        assert!(!result);
-    }
-
-    #[test]
-    fn test_console_key_right_key_but_not_pressed() {
-        let input = KeyboardInput {
-            scan_code: 0,
-            key_code: Some(KeyCode::Grave),
-            state: ElementState::Released,
-        };
-
-        let config = vec![ToggleConsoleKey::KeyCode(KeyCode::Grave)];
-
-        let result = console_key_pressed(&input, &config);
-        assert!(!result);
     }
 }

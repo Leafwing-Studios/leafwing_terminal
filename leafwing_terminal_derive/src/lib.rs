@@ -10,9 +10,9 @@ struct ConsoleCommandContainerAttr {
 }
 
 /// Implement
-/// [`CommandName`](https://docs.rs/bevy_console/latest/bevy_console/trait.CommandName.html),
-/// [`CommandArgs`](https://docs.rs/bevy_console/latest/bevy_console/trait.CommandArgs.html) and
-/// [`CommandHelp`](https://docs.rs/bevy_console/latest/bevy_console/trait.CommandHelp.html)
+/// [`CommandName`](https://docs.rs/leafwing_terminal/latest/leafwing_terminal/trait.CommandName.html),
+/// [`CommandArgs`](https://docs.rs/leafwing_terminal/latest/leafwing_terminal/trait.CommandArgs.html) and
+/// [`CommandHelp`](https://docs.rs/leafwing_terminal/latest/leafwing_terminal/trait.CommandHelp.html)
 /// for a struct.
 ///
 /// Doc comments are used to provide argument and command help.
@@ -103,7 +103,7 @@ pub fn derive_console_command(input: TokenStream) -> TokenStream {
         let index = i as u8;
 
         let expanded = quote! {
-            #ident: <#ty as bevy_console::FromValue>::from_value_iter(&mut values, #index)?,
+            #ident: <#ty as leafwing_terminal::FromValue>::from_value_iter(&mut values, #index)?,
         };
         fields.push(expanded);
     }
@@ -141,7 +141,7 @@ pub fn derive_console_command(input: TokenStream) -> TokenStream {
             let optional = is_ty_option(ty);
 
             quote! {
-                bevy_console::CommandArgInfo {
+                leafwing_terminal::CommandArgInfo {
                     name: #name.to_string(),
                     ty: #ty_string.to_string(),
                     description: #arg_description,
@@ -153,15 +153,15 @@ pub fn derive_console_command(input: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! {
         #[automatically_derived]
-        impl bevy_console::CommandName for #ident {
+        impl leafwing_terminal::CommandName for #ident {
             fn command_name() -> &'static str {
                 #command_name
             }
         }
 
         #[automatically_derived]
-        impl bevy_console::CommandArgs for #ident {
-            fn from_values(values: &[bevy_console::ValueRawOwned]) -> ::std::result::Result<Self, bevy_console::FromValueError> {
+        impl leafwing_terminal::CommandArgs for #ident {
+            fn from_values(values: &[leafwing_terminal::ValueRawOwned]) -> ::std::result::Result<Self, leafwing_terminal::FromValueError> {
                 let mut values = values.iter();
 
                 Ok(#ident {
@@ -171,9 +171,9 @@ pub fn derive_console_command(input: TokenStream) -> TokenStream {
         }
 
         #[automatically_derived]
-        impl bevy_console::CommandHelp for #ident {
-            fn command_help() -> ::std::option::Option<bevy_console::CommandInfo> {
-                ::std::option::Option::Some(bevy_console::CommandInfo {
+        impl leafwing_terminal::CommandHelp for #ident {
+            fn command_help() -> ::std::option::Option<leafwing_terminal::CommandInfo> {
+                ::std::option::Option::Some(leafwing_terminal::CommandInfo {
                     name: #command_name.to_string(),
                     description: #command_description,
                     args: vec![
