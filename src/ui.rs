@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use crate::{ConsoleCommandEntered, ConsoleConfiguration, ConsoleState};
 use bevy_egui::egui::epaint::text::cursor::CCursor;
 use bevy_egui::{
-    egui::{self, text_edit::CCursorRange, Context, Id, RichText, ScrollArea, TextEdit},
+    egui::{
+        self, text_edit::CCursorRange, Color32, Context, Frame, Id, RichText, ScrollArea, TextEdit,
+    },
     EguiContext,
 };
 use leafwing_terminal_parser::{parse_console_command, ValueRawOwned};
@@ -16,9 +18,13 @@ pub(crate) fn console_ui(
 ) {
     egui::Window::new("Console")
         .collapsible(false)
-        .default_pos([config.left_pos, config.top_pos])
-        .default_size([config.width, config.height])
-        .resizable(true)
+        .fixed_pos([config.left_pos, config.top_pos])
+        .fixed_size([config.width, config.height])
+        .title_bar(false)
+        .frame(Frame {
+            fill: Color32::BLACK,
+            ..Default::default()
+        })
         .show(egui_context.ctx_mut(), |ui| {
             ui.vertical(|ui| {
                 let scroll_height = ui.available_height() - 30.0;
