@@ -1,7 +1,7 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
-use crate as bevy_console;
+use crate as leafwing_terminal;
 use crate::ConsoleCommand;
 
 /// Exits the app

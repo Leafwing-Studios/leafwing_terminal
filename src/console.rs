@@ -12,14 +12,14 @@ use bevy::{
     input::keyboard::KeyboardInput,
     prelude::*,
 };
-use bevy_console_parser::{parse_console_command, ValueRawOwned};
 use bevy_egui::egui::epaint::text::cursor::CCursor;
 use bevy_egui::egui::text_edit::CCursorRange;
 use bevy_egui::egui::{Context, Id};
 use bevy_egui::{
-    egui::{self, Align, RichText, ScrollArea, TextEdit},
+    egui::{self, RichText, ScrollArea, TextEdit},
     EguiContext,
 };
+use leafwing_terminal_parser::{parse_console_command, ValueRawOwned};
 
 use crate::FromValueError;
 
@@ -30,7 +30,7 @@ use crate::FromValueError;
 /// `log "hello"`
 ///
 /// ```
-/// # use bevy_console::CommandName;
+/// # use leafwing_terminal::CommandName;
 /// #
 /// struct LogCommand;
 ///
@@ -50,7 +50,7 @@ pub trait CommandName {
 /// # Example
 ///
 /// ```
-/// # use bevy_console::{CommandArgs, FromValue, FromValueError, ValueRawOwned};
+/// # use leafwing_terminal::{CommandArgs, FromValue, FromValueError, ValueRawOwned};
 /// #
 /// struct LogCommand {
 ///     msg: String,
@@ -77,7 +77,7 @@ pub trait CommandArgs: Sized {
 /// # Example
 ///
 /// ```
-/// # use bevy_console::{CommandArgInfo, CommandHelp, CommandInfo, CommandName};
+/// # use leafwing_terminal::{CommandArgInfo, CommandHelp, CommandInfo, CommandName};
 /// #
 /// struct LogCommand {
 ///     msg: String,
@@ -223,12 +223,12 @@ impl CommandInfo {
 /// Executed parsed console command.
 ///
 /// Used to capture console commands which implement [`CommandName`], [`CommandArgs`] & [`CommandHelp`].
-/// These can be easily implemented with the [`ConsoleCommand`](bevy_console_derive::ConsoleCommand) derive macro.
+/// These can be easily implemented with the [`ConsoleCommand`](leafwing_terminal_derive::ConsoleCommand) derive macro.
 ///
 /// # Example
 ///
 /// ```
-/// # use bevy_console::ConsoleCommand;
+/// # use leafwing_terminal::ConsoleCommand;
 /// #
 /// /// Prints given arguments to the console.
 /// #[derive(ConsoleCommand)]
@@ -442,7 +442,7 @@ pub trait AddConsoleCommand {
     ///
     /// ```
     /// # use bevy::prelude::*;
-    /// # use bevy_console::{AddConsoleCommand, ConsoleCommand};
+    /// # use leafwing_terminal::{AddConsoleCommand, ConsoleCommand};
     /// #
     /// App::new()
     ///     .add_console_command::<LogCommand, _, _>(log_command);

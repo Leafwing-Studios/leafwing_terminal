@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate as bevy_console;
+use crate as leafwing_terminal;
 use crate::console::ConsoleState;
 use crate::ConsoleCommand;
 

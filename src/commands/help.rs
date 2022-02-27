@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate as bevy_console;
+use crate as leafwing_terminal;
 use crate::{reply, CommandInfo, ConsoleCommand, ConsoleConfiguration};
 
 /// Prints available arguments and usage

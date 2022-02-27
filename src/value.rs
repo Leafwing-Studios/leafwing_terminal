@@ -1,6 +1,6 @@
 use std::fmt;
 
-use bevy_console_parser::{Value, ValueRawOwned};
+use leafwing_terminal_parser::{Value, ValueRawOwned};
 
 /// The value types available for arguments.
 #[derive(Clone, Copy, Debug, PartialEq)]

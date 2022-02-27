@@ -1,4 +1,4 @@
-# bevy_console
+# leafwing_terminal
 
 A simple half-life inspired console with support for argument parsing.
 
@@ -12,7 +12,7 @@ Add `ConsolePlugin` and optionally the resource `ConsoleConfiguration`.
 
 ```rust
 use bevy::prelude::*;
-use bevy_console::{ConsoleConfiguration, ConsolePlugin};
+use leafwing_terminal::{ConsoleConfiguration, ConsolePlugin};
 
 fn main() {
     App::new()
@@ -30,7 +30,7 @@ Add [doc comments](https://doc.rust-lang.org/rust-by-example/meta/doc.html#doc-c
 
 ```rust
 use bevy::prelude::*;
-use bevy_console::{reply, AddConsoleCommand, ConsoleCommand, ConsolePlugin};
+use leafwing_terminal::{reply, AddConsoleCommand, ConsoleCommand, ConsolePlugin};
 
 fn main() {
     App::new()
