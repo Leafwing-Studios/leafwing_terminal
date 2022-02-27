@@ -9,16 +9,18 @@ pub use leafwing_terminal_parser::{Value, ValueRawOwned};
 use crate::commands::clear::{clear_command, ClearCommand};
 use crate::commands::exit::{exit_command, ExitCommand};
 use crate::commands::help::{help_command, HelpCommand};
-use crate::console::{console_ui, receive_console_line, ConsoleState};
+use crate::console::{receive_console_line, ConsoleState};
 pub use crate::console::{
     AddConsoleCommand, CommandArgInfo, CommandArgs, CommandHelp, CommandInfo, CommandName,
     ConsoleCommand, ConsoleCommandEntered, ConsoleConfiguration, PrintConsoleLine,
 };
+use crate::ui::console_ui;
 pub use crate::value::{FromValue, FromValueError, ValueType};
 
 mod commands;
 mod console;
 mod macros;
+mod ui;
 mod value;
 
 /// Console plugin.
