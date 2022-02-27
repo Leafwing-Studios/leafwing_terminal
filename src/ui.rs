@@ -17,7 +17,7 @@ pub(crate) fn terminal_ui(
     mut command_entered: EventWriter<TerminalCommandEntered>,
 ) {
     const INPUT_HEIGHT: f32 = 30.;
-    const MARGIN: f32 = 5.;
+    const MARGIN: f32 = 10.;
 
     egui::Window::new("Terminal")
         .collapsible(false)
