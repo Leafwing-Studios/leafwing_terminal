@@ -16,15 +16,17 @@ pub(crate) fn terminal_ui(
     mut state: ResMut<TerminalState>,
     mut command_entered: EventWriter<TerminalCommandEntered>,
 ) {
-    const INPUT_HEIGHT: f32 = 35.;
+    const INPUT_HEIGHT: f32 = 30.;
+    const MARGIN: f32 = 5.;
 
     egui::Window::new("Terminal")
         .collapsible(false)
         .fixed_pos([config.left_pos, config.top_pos])
-        .fixed_size([config.width, config.height])
+        .fixed_size([config.width - 2. * MARGIN, config.height - 2. * MARGIN])
         .title_bar(false)
         .frame(Frame {
             fill: Color32::BLACK,
+            margin: (MARGIN, MARGIN).into(),
             ..Default::default()
         })
         .show(egui_context.ctx_mut(), |ui| {
