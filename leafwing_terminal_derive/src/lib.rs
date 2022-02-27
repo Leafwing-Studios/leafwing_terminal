@@ -4,8 +4,8 @@ use quote::{quote, ToTokens};
 use syn::{parse_macro_input, spanned::Spanned, DeriveInput};
 
 #[derive(Debug, Eq, PartialEq, FromAttributes)]
-#[bae("console_command")]
-struct ConsoleCommandContainerAttr {
+#[bae("terminal_command")]
+struct TerminalCommandContainerAttr {
     name: syn::Lit,
 }
 
@@ -19,16 +19,16 @@ struct ConsoleCommandContainerAttr {
 ///
 /// # Container Attributes
 ///
-/// - `#[console_command(name = "log")`
+/// - `#[terminal_command(name = "log")`
 ///
-///   Specify the console command name.
+///   Specify the terminal command name.
 ///
 /// # Example
 ///
 /// ```
-/// /// Prints given arguments to the console.
-/// #[derive(ConsoleCommand)]
-/// #[console_command(name = "log")]
+/// /// Prints given arguments to the terminal.
+/// #[derive(TerminalCommand)]
+/// #[terminal_command(name = "log")]
 /// struct LogCommand {
 ///     /// Message to print
 ///     msg: String,
@@ -36,8 +36,8 @@ struct ConsoleCommandContainerAttr {
 ///     num: Option<i64>,
 /// }
 /// ```
-#[proc_macro_derive(ConsoleCommand, attributes(console_command))]
-pub fn derive_console_command(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(TerminalCommand, attributes(terminal_command))]
+pub fn derive_terminal_command(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
 
     let ident = &ast.ident;
@@ -61,7 +61,7 @@ pub fn derive_console_command(input: TokenStream) -> TokenStream {
         }
     };
 
-    let attrs = match ConsoleCommandContainerAttr::from_attributes(&ast.attrs) {
+    let attrs = match TerminalCommandContainerAttr::from_attributes(&ast.attrs) {
         Ok(attrs) => attrs,
         Err(err) => return err.into_compile_error().into(),
     };

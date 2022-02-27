@@ -3,40 +3,40 @@
 
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
-pub use leafwing_terminal_derive::ConsoleCommand;
+pub use leafwing_terminal_derive::TerminalCommand;
 pub use leafwing_terminal_parser::{Value, ValueRawOwned};
 
 use crate::commands::clear::{clear_command, ClearCommand};
 use crate::commands::exit::{exit_command, ExitCommand};
 use crate::commands::help::{help_command, HelpCommand};
-use crate::console::{receive_console_line, ConsoleState};
-pub use crate::console::{
-    AddConsoleCommand, CommandArgInfo, CommandArgs, CommandHelp, CommandInfo, CommandName,
-    ConsoleCommand, ConsoleCommandEntered, ConsoleConfiguration, PrintConsoleLine,
+use crate::terminal::{receive_terminal_line, TerminalState};
+pub use crate::terminal::{
+    AddTerminalCommand, CommandArgInfo, CommandArgs, CommandHelp, CommandInfo, CommandName,
+    PrintTerminalLine, TerminalCommand, TerminalCommandEntered, TerminalConfiguration,
 };
-use crate::ui::console_ui;
+use crate::ui::terminal_ui;
 pub use crate::value::{FromValue, FromValueError, ValueType};
 
 mod commands;
-mod console;
 mod macros;
+mod terminal;
 mod ui;
 mod value;
 
-/// Console plugin.
-pub struct ConsolePlugin;
+/// Terminal plugin.
+pub struct TerminalPlugin;
 
-impl Plugin for ConsolePlugin {
+impl Plugin for TerminalPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<ConsoleConfiguration>()
-            .init_resource::<ConsoleState>()
-            .add_event::<ConsoleCommandEntered>()
-            .add_event::<PrintConsoleLine>()
+        app.init_resource::<TerminalConfiguration>()
+            .init_resource::<TerminalState>()
+            .add_event::<TerminalCommandEntered>()
+            .add_event::<PrintTerminalLine>()
             .add_plugin(EguiPlugin)
-            .add_console_command::<ClearCommand, _, _>(clear_command)
-            .add_console_command::<ExitCommand, _, _>(exit_command)
-            .add_console_command::<HelpCommand, _, _>(help_command)
-            .add_system(console_ui)
-            .add_system(receive_console_line);
+            .add_terminal_command::<ClearCommand, _, _>(clear_command)
+            .add_terminal_command::<ExitCommand, _, _>(exit_command)
+            .add_terminal_command::<HelpCommand, _, _>(help_command)
+            .add_system(terminal_ui)
+            .add_system(receive_terminal_line);
     }
 }

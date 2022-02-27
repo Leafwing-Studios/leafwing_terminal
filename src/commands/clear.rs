@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 
 use crate as leafwing_terminal;
-use crate::console::ConsoleState;
-use crate::ConsoleCommand;
+use crate::terminal::TerminalState;
+use crate::TerminalCommand;
 
-/// Clears the console
-#[derive(ConsoleCommand)]
-#[console_command(name = "clear")]
+/// Clears the terminal
+#[derive(TerminalCommand)]
+#[terminal_command(name = "clear")]
 pub(crate) struct ClearCommand;
 
 pub(crate) fn clear_command(
-    mut clear: ConsoleCommand<ClearCommand>,
-    mut state: ResMut<ConsoleState>,
+    mut clear: TerminalCommand<ClearCommand>,
+    mut state: ResMut<TerminalState>,
 ) {
     if clear.take().is_some() {
         state.scrollback.clear();

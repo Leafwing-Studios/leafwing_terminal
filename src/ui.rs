@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{ConsoleCommandEntered, ConsoleConfiguration, ConsoleState};
+use crate::{TerminalCommandEntered, TerminalConfiguration, TerminalState};
 use bevy_egui::egui::epaint::text::cursor::CCursor;
 use bevy_egui::{
     egui::{
@@ -8,15 +8,15 @@ use bevy_egui::{
     },
     EguiContext,
 };
-use leafwing_terminal_parser::{parse_console_command, ValueRawOwned};
+use leafwing_terminal_parser::{parse_terminal_command, ValueRawOwned};
 
-pub(crate) fn console_ui(
+pub(crate) fn terminal_ui(
     mut egui_context: ResMut<EguiContext>,
-    config: Res<ConsoleConfiguration>,
-    mut state: ResMut<ConsoleState>,
-    mut command_entered: EventWriter<ConsoleCommandEntered>,
+    config: Res<TerminalConfiguration>,
+    mut state: ResMut<TerminalState>,
+    mut command_entered: EventWriter<TerminalCommandEntered>,
 ) {
-    egui::Window::new("Console")
+    egui::Window::new("Terminal")
         .collapsible(false)
         .fixed_pos([config.left_pos, config.top_pos])
         .fixed_size([config.width, config.height])
@@ -65,9 +65,9 @@ pub(crate) fn console_ui(
                             state.history.pop_back();
                         }
 
-                        match parse_console_command(&state.buf) {
+                        match parse_terminal_command(&state.buf) {
                             Ok(cmd) => {
-                                let command = ConsoleCommandEntered {
+                                let command = TerminalCommandEntered {
                                     command: cmd.command.to_string(),
                                     args: cmd.args.into_iter().map(ValueRawOwned::from).collect(),
                                 };

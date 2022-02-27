@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 
 use crate as leafwing_terminal;
-use crate::{reply, CommandInfo, ConsoleCommand, ConsoleConfiguration};
+use crate::{reply, CommandInfo, TerminalCommand, TerminalConfiguration};
 
 /// Prints available arguments and usage
-#[derive(ConsoleCommand)]
-#[console_command(name = "help")]
+#[derive(TerminalCommand)]
+#[terminal_command(name = "help")]
 pub(crate) struct HelpCommand {
     /// Help for a given command
     command: Option<String>,
 }
 
 pub(crate) fn help_command(
-    mut help: ConsoleCommand<HelpCommand>,
-    config: Res<ConsoleConfiguration>,
+    mut help: TerminalCommand<HelpCommand>,
+    config: Res<TerminalConfiguration>,
 ) {
     match help.take() {
         Some(HelpCommand { command: Some(cmd) }) => match config.commands.get(cmd.as_str()) {

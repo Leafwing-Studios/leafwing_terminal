@@ -15,7 +15,7 @@ use leafwing_terminal_parser::ValueRawOwned;
 
 use crate::FromValueError;
 
-/// Console command name.
+/// Terminal command name.
 ///
 /// # Example
 ///
@@ -85,7 +85,7 @@ pub trait CommandArgs: Sized {
 ///     fn command_help() -> Option<CommandInfo> {
 ///         Some(CommandInfo {
 ///             name: "log".to_string(),
-///             description: Some("Prints a message to the console".to_string()),
+///             description: Some("Prints a message to the terminal".to_string()),
 ///             args: vec![
 ///                 CommandArgInfo {
 ///                     name: "msg".to_string(),
@@ -99,7 +99,7 @@ pub trait CommandArgs: Sized {
 /// }
 /// ```
 pub trait CommandHelp: CommandName {
-    /// Help for a console command.
+    /// Help for a terminal command.
     fn command_help() -> Option<CommandInfo> {
         None
     }
@@ -212,19 +212,19 @@ impl CommandInfo {
     }
 }
 
-/// Executed parsed console command.
+/// Executed parsed terminal command.
 ///
-/// Used to capture console commands which implement [`CommandName`], [`CommandArgs`] & [`CommandHelp`].
-/// These can be easily implemented with the [`ConsoleCommand`](leafwing_terminal_derive::ConsoleCommand) derive macro.
+/// Used to capture terminal commands which implement [`CommandName`], [`CommandArgs`] & [`CommandHelp`].
+/// These can be easily implemented with the [`TerminalCommand`](leafwing_terminal_derive::TerminalCommand) derive macro.
 ///
 /// # Example
 ///
 /// ```
-/// # use leafwing_terminal::ConsoleCommand;
+/// # use leafwing_terminal::TerminalCommand;
 /// #
-/// /// Prints given arguments to the console.
-/// #[derive(ConsoleCommand)]
-/// #[console_command(name = "log")]
+/// /// Prints given arguments to the terminal.
+/// #[derive(TerminalCommand)]
+/// #[terminal_command(name = "log")]
 /// struct LogCommand {
 ///     /// Message to print
 ///     msg: String,
@@ -232,18 +232,18 @@ impl CommandInfo {
 ///     num: Option<i64>,
 /// }
 ///
-/// fn log_command(mut log: ConsoleCommand<LogCommand>) {
+/// fn log_command(mut log: TerminalCommand<LogCommand>) {
 ///     if let Some(LogCommand { msg, num }) = log.take() {
 ///         log.ok();
 ///     }
 /// }
 /// ```
-pub struct ConsoleCommand<'w, 's, T> {
+pub struct TerminalCommand<'w, 's, T> {
     command: Option<T>,
-    console_line: EventWriter<'w, 's, PrintConsoleLine>,
+    terminal_line: EventWriter<'w, 's, PrintTerminalLine>,
 }
 
-impl<'w, 's, T> ConsoleCommand<'w, 's, T> {
+impl<'w, 's, T> TerminalCommand<'w, 's, T> {
     /// Returns Some(T) if the command was executed and arguments were valid.
     ///
     /// This method should only be called once.
@@ -252,71 +252,71 @@ impl<'w, 's, T> ConsoleCommand<'w, 's, T> {
         mem::take(&mut self.command)
     }
 
-    /// Print `[ok]` in the console.
+    /// Print `[ok]` in the terminal.
     pub fn ok(&mut self) {
-        self.console_line
-            .send(PrintConsoleLine::new("[ok]".to_string()));
+        self.terminal_line
+            .send(PrintTerminalLine::new("[ok]".to_string()));
     }
 
-    /// Print `[failed]` in the console.
+    /// Print `[failed]` in the terminal.
     pub fn failed(&mut self) {
-        self.console_line
-            .send(PrintConsoleLine::new("[failed]".to_string()));
+        self.terminal_line
+            .send(PrintTerminalLine::new("[failed]".to_string()));
     }
 
-    /// Print a reply in the console.
+    /// Print a reply in the terminal.
     ///
     /// See [`reply!`](crate::reply) for usage with the [`format!`] syntax.
     pub fn reply(&mut self, msg: impl Into<String>) {
-        self.console_line.send(PrintConsoleLine::new(msg.into()));
+        self.terminal_line.send(PrintTerminalLine::new(msg.into()));
     }
 
-    /// Print a reply in the console followed by `[ok]`.
+    /// Print a reply in the terminal followed by `[ok]`.
     ///
     /// See [`reply_ok!`](crate::reply_ok) for usage with the [`format!`] syntax.
     pub fn reply_ok(&mut self, msg: impl Into<String>) {
-        self.console_line.send(PrintConsoleLine::new(msg.into()));
+        self.terminal_line.send(PrintTerminalLine::new(msg.into()));
         self.ok();
     }
 
-    /// Print a reply in the console followed by `[failed]`.
+    /// Print a reply in the terminal followed by `[failed]`.
     ///
     /// See [`reply_failed!`](crate::reply_failed) for usage with the [`format!`] syntax.
     pub fn reply_failed(&mut self, msg: impl Into<String>) {
-        self.console_line.send(PrintConsoleLine::new(msg.into()));
+        self.terminal_line.send(PrintTerminalLine::new(msg.into()));
         self.failed();
     }
 }
 
-pub struct ConsoleCommandState<T> {
+pub struct TerminalCommandState<T> {
     #[allow(clippy::type_complexity)]
     event_reader: EventReaderState<
         (
-            LocalState<(usize, PhantomData<ConsoleCommandEntered>)>,
-            ResState<Events<ConsoleCommandEntered>>,
+            LocalState<(usize, PhantomData<TerminalCommandEntered>)>,
+            ResState<Events<TerminalCommandEntered>>,
         ),
-        ConsoleCommandEntered,
+        TerminalCommandEntered,
     >,
-    console_line: EventWriterState<(ResMutState<Events<PrintConsoleLine>>,), PrintConsoleLine>,
+    terminal_line: EventWriterState<(ResMutState<Events<PrintTerminalLine>>,), PrintTerminalLine>,
     marker: PhantomData<T>,
 }
 
 impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParam
-    for ConsoleCommand<'w, 's, T>
+    for TerminalCommand<'w, 's, T>
 {
-    type Fetch = ConsoleCommandState<T>;
+    type Fetch = TerminalCommandState<T>;
 }
 
-unsafe impl<'w, 's, T: Resource> SystemParamState for ConsoleCommandState<T> {
+unsafe impl<'w, 's, T: Resource> SystemParamState for TerminalCommandState<T> {
     type Config = ();
 
     fn init(world: &mut World, system_meta: &mut SystemMeta, _config: Self::Config) -> Self {
         let event_reader = EventReaderState::init(world, system_meta, (None, ()));
-        let console_line = EventWriterState::init(world, system_meta, ((),));
+        let terminal_line = EventWriterState::init(world, system_meta, ((),));
 
-        ConsoleCommandState {
+        TerminalCommandState {
             event_reader,
-            console_line,
+            terminal_line,
             marker: PhantomData::default(),
         }
     }
@@ -325,9 +325,9 @@ unsafe impl<'w, 's, T: Resource> SystemParamState for ConsoleCommandState<T> {
 }
 
 impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParamFetch<'w, 's>
-    for ConsoleCommandState<T>
+    for TerminalCommandState<T>
 {
-    type Item = ConsoleCommand<'w, 's, T>;
+    type Item = TerminalCommand<'w, 's, T>;
 
     #[inline]
     unsafe fn get_param(
@@ -338,8 +338,8 @@ impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParamF
     ) -> Self::Item {
         let mut event_reader =
             EventReaderState::get_param(&mut state.event_reader, system_meta, world, change_tick);
-        let mut console_line =
-            EventWriterState::get_param(&mut state.console_line, system_meta, world, change_tick);
+        let mut terminal_line =
+            EventWriterState::get_param(&mut state.terminal_line, system_meta, world, change_tick);
 
         let command = event_reader
             .iter()
@@ -348,13 +348,13 @@ impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParamF
             .and_then(|result| match result {
                 Ok(value) => Some(value),
                 Err(err) => {
-                    console_line.send(PrintConsoleLine::new(err.to_string()));
+                    terminal_line.send(PrintTerminalLine::new(err.to_string()));
                     match err {
                         FromValueError::UnexpectedArgType { .. }
                         | FromValueError::NotEnoughArgs
                         | FromValueError::Custom(_) => {
                             if let Some(help_text) = T::command_help() {
-                                console_line.send(PrintConsoleLine::new(help_text.help_text()));
+                                terminal_line.send(PrintTerminalLine::new(help_text.help_text()));
                             }
                         }
                         FromValueError::ValueTooLarge { .. } => {}
@@ -363,55 +363,55 @@ impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParamF
                 }
             });
 
-        ConsoleCommand {
+        TerminalCommand {
             command,
-            console_line,
+            terminal_line,
         }
     }
 }
 
-/// Parsed raw console command into `command` and `args`.
+/// Parsed raw terminal command into `command` and `args`.
 #[derive(Clone, Debug, PartialEq)]
-pub struct ConsoleCommandEntered {
+pub struct TerminalCommandEntered {
     /// Command name
     pub command: String,
     /// Raw parsed arguments
     pub args: Vec<ValueRawOwned>,
 }
 
-/// Events to print to the console.
+/// Events to print to the terminal.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PrintConsoleLine {
-    /// Console line
+pub struct PrintTerminalLine {
+    /// Terminal line
     pub line: String,
 }
 
-impl PrintConsoleLine {
-    /// Creates a new console line to print.
+impl PrintTerminalLine {
+    /// Creates a new terminal line to print.
     pub const fn new(line: String) -> Self {
         Self { line }
     }
 }
 
-/// Console configuration
+/// Terminal configuration
 #[derive(Clone)]
-pub struct ConsoleConfiguration {
-    /// Registered keys for toggling the console
+pub struct TerminalConfiguration {
+    /// Registered keys for toggling the terminal
     /// Left position
     pub left_pos: f32,
     /// Top position
     pub top_pos: f32,
-    /// Console height
+    /// Terminal height
     pub height: f32,
-    /// Console width
+    /// Terminal width
     pub width: f32,
-    /// Registered console commands
+    /// Registered terminal commands
     pub commands: BTreeMap<&'static str, Option<CommandInfo>>,
     /// Number of commands to store in history
     pub history_size: usize,
 }
 
-impl Default for ConsoleConfiguration {
+impl Default for TerminalConfiguration {
     fn default() -> Self {
         Self {
             left_pos: 200.0,
@@ -424,29 +424,29 @@ impl Default for ConsoleConfiguration {
     }
 }
 
-/// Add a console commands to Bevy app.
-pub trait AddConsoleCommand {
-    /// Add a console command with a given system.
+/// Add a terminal commands to Bevy app.
+pub trait AddTerminalCommand {
+    /// Add a terminal command with a given system.
     ///
-    /// This registers the console command so it will print with the built-in `help` console command.
+    /// This registers the terminal command so it will print with the built-in `help` terminal command.
     ///
     /// # Example
     ///
     /// ```
     /// # use bevy::prelude::*;
-    /// # use leafwing_terminal::{AddConsoleCommand, ConsoleCommand};
+    /// # use leafwing_terminal::{AddTerminalCommand, TerminalCommand};
     /// #
     /// App::new()
-    ///     .add_console_command::<LogCommand, _, _>(log_command);
+    ///     .add_terminal_command::<LogCommand, _, _>(log_command);
     /// #
-    /// # /// Prints given arguments to the console.
-    /// # #[derive(ConsoleCommand)]
-    /// # #[console_command(name = "log")]
+    /// # /// Prints given arguments to the terminal.
+    /// # #[derive(TerminalCommand)]
+    /// # #[terminal_command(name = "log")]
     /// # struct LogCommand;
     /// #
-    /// # fn log_command(mut log: ConsoleCommand<LogCommand>) {}
+    /// # fn log_command(mut log: TerminalCommand<LogCommand>) {}
     /// ```
-    fn add_console_command<T: CommandName + CommandHelp, Sys, Params>(
+    fn add_terminal_command<T: CommandName + CommandHelp, Sys, Params>(
         &mut self,
         system: Sys,
     ) -> &mut Self
@@ -454,19 +454,19 @@ pub trait AddConsoleCommand {
         Sys: IntoSystemDescriptor<Params>;
 }
 
-impl AddConsoleCommand for App {
-    fn add_console_command<T: CommandName + CommandHelp, Sys, Params>(
+impl AddTerminalCommand for App {
+    fn add_terminal_command<T: CommandName + CommandHelp, Sys, Params>(
         &mut self,
         system: Sys,
     ) -> &mut Self
     where
         Sys: IntoSystemDescriptor<Params>,
     {
-        let sys = move |mut config: ResMut<ConsoleConfiguration>| {
+        let sys = move |mut config: ResMut<TerminalConfiguration>| {
             let name = T::command_name();
             if config.commands.contains_key(name) {
                 warn!(
-                    "console command '{}' already registered and was overwritten",
+                    "terminal command '{}' already registered and was overwritten",
                     name
                 );
             }
@@ -477,16 +477,16 @@ impl AddConsoleCommand for App {
     }
 }
 
-pub(crate) struct ConsoleState {
+pub(crate) struct TerminalState {
     pub(crate) buf: String,
     pub(crate) scrollback: Vec<String>,
     pub(crate) history: VecDeque<String>,
     pub(crate) history_index: usize,
 }
 
-impl Default for ConsoleState {
+impl Default for TerminalState {
     fn default() -> Self {
-        ConsoleState {
+        TerminalState {
             buf: String::default(),
             scrollback: Vec::new(),
             history: VecDeque::from([String::new()]),
@@ -495,12 +495,12 @@ impl Default for ConsoleState {
     }
 }
 
-pub(crate) fn receive_console_line(
-    mut console_state: ResMut<ConsoleState>,
-    mut events: EventReader<PrintConsoleLine>,
+pub(crate) fn receive_terminal_line(
+    mut terminal_state: ResMut<TerminalState>,
+    mut events: EventReader<PrintTerminalLine>,
 ) {
     for event in events.iter() {
-        let event: &PrintConsoleLine = event;
-        console_state.scrollback.push(event.line.clone());
+        let event: &PrintTerminalLine = event;
+        terminal_state.scrollback.push(event.line.clone());
     }
 }

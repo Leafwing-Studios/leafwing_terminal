@@ -8,7 +8,7 @@ mod value;
 pub type Error<I> = ErrorTree<I>;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ConsoleCommand<'a> {
+pub struct TerminalCommand<'a> {
     pub command: &'a str,
     pub args: Vec<ValueRaw<'a>>,
 }
@@ -17,8 +17,8 @@ pub fn parse_arg_str(s: &str) -> Result<Vec<ValueRaw>, nom::error::Error<&str>> 
     final_parser(parse::parse_value_list)(s)
 }
 
-pub fn parse_console_command(s: &str) -> Result<ConsoleCommand, nom::error::Error<&str>> {
+pub fn parse_terminal_command(s: &str) -> Result<TerminalCommand, nom::error::Error<&str>> {
     let (command, args) = final_parser(parse::parse_full_command)(s)?;
 
-    Ok(ConsoleCommand { command, args })
+    Ok(TerminalCommand { command, args })
 }
