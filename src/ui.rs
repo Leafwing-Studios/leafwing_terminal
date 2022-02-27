@@ -16,6 +16,8 @@ pub(crate) fn terminal_ui(
     mut state: ResMut<TerminalState>,
     mut command_entered: EventWriter<TerminalCommandEntered>,
 ) {
+    const INPUT_HEIGHT: f32 = 35.;
+
     egui::Window::new("Terminal")
         .collapsible(false)
         .fixed_pos([config.left_pos, config.top_pos])
@@ -27,7 +29,7 @@ pub(crate) fn terminal_ui(
         })
         .show(egui_context.ctx_mut(), |ui| {
             ui.vertical(|ui| {
-                let scroll_height = ui.available_height() - 30.0;
+                let scroll_height = ui.available_height() - INPUT_HEIGHT;
 
                 // Scroll area
                 ScrollArea::vertical()
