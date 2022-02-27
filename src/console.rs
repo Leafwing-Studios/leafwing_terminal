@@ -9,7 +9,6 @@ use bevy::{
         LocalState, ResMutState, ResState, Resource, SystemMeta, SystemParam, SystemParamFetch,
         SystemParamState,
     },
-    input::keyboard::KeyboardInput,
     prelude::*,
 };
 use bevy_egui::egui::epaint::text::cursor::CCursor;
@@ -506,7 +505,6 @@ impl Default for ConsoleState {
 pub(crate) fn console_ui(
     mut egui_context: ResMut<EguiContext>,
     config: Res<ConsoleConfiguration>,
-    mut keyboard_input_events: EventReader<KeyboardInput>,
     mut state: ResMut<ConsoleState>,
     mut command_entered: EventWriter<ConsoleCommandEntered>,
 ) {
