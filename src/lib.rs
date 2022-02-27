@@ -36,7 +36,7 @@ impl Plugin for ConsolePlugin {
             .add_console_command::<ClearCommand, _, _>(clear_command)
             .add_console_command::<ExitCommand, _, _>(exit_command)
             .add_console_command::<HelpCommand, _, _>(help_command)
-            .add_system(console_ui.exclusive_system())
+            .add_system(console_ui)
             .add_system(receive_console_line);
     }
 }
