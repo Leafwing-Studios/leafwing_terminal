@@ -4,7 +4,7 @@ use std::{fmt::Write, mem};
 
 use bevy::ecs::schedule::IntoSystemDescriptor;
 use bevy::{
-    app::{EventReaderState, EventWriterState, Events},
+    ecs::event::{EventReaderState, EventWriterState, Events},
     ecs::system::{
         LocalState, ResMutState, ResState, Resource, SystemMeta, SystemParam, SystemParamFetch,
         SystemParamState,
@@ -308,11 +308,11 @@ impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParam
 }
 
 unsafe impl<'w, 's, T: Resource> SystemParamState for TerminalCommandState<T> {
-    type Config = ();
 
-    fn init(world: &mut World, system_meta: &mut SystemMeta, _config: Self::Config) -> Self {
-        let event_reader = EventReaderState::init(world, system_meta, (None, ()));
-        let terminal_line = EventWriterState::init(world, system_meta, ((),));
+
+    fn init(world: &mut World, system_meta: &mut SystemMeta) -> Self {
+        let event_reader = EventReaderState::init(world, system_meta);
+        let terminal_line = EventWriterState::init(world, system_meta);
 
         TerminalCommandState {
             event_reader,
@@ -321,7 +321,6 @@ unsafe impl<'w, 's, T: Resource> SystemParamState for TerminalCommandState<T> {
         }
     }
 
-    fn default_config() {}
 }
 
 impl<'w, 's, T: Resource + CommandName + CommandArgs + CommandHelp> SystemParamFetch<'w, 's>

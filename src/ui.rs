@@ -26,7 +26,6 @@ pub(crate) fn terminal_ui(
         .title_bar(false)
         .frame(Frame {
             fill: Color32::BLACK,
-            margin: (MARGIN, MARGIN).into(),
             ..Default::default()
         })
         .show(egui_context.ctx_mut(), |ui| {
@@ -53,7 +52,7 @@ pub(crate) fn terminal_ui(
                 let text_edit = TextEdit::singleline(&mut state.buf)
                     .desired_width(f32::INFINITY)
                     .lock_focus(true)
-                    .text_style(egui::TextStyle::Monospace);
+                    .font(egui::TextStyle::Monospace);
 
                 // Handle enter
                 let text_edit_response = ui.add(text_edit);
